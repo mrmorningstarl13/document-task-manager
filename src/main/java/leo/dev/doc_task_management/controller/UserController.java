@@ -1,5 +1,6 @@
 package leo.dev.doc_task_management.controller;
 
+import leo.dev.doc_task_management.dto.request.ChangeRoleRequest;
 import leo.dev.doc_task_management.dto.request.UpdateUserRequest;
 import leo.dev.doc_task_management.dto.response.UserResponse;
 import leo.dev.doc_task_management.entity.User;
@@ -46,8 +47,8 @@ public class UserController {
     @PutMapping("/admin/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> changeUserRole(@PathVariable Long id,
-                                                       @RequestBody String role) {
-        return ResponseEntity.ok(userService.changeUserRole(id, role));
+                                                       @RequestBody ChangeRoleRequest request) {
+        return ResponseEntity.ok(userService.changeUserRole(id, request.getRole()));
     }
 
     @PutMapping("/admin/{id}/deactivate")

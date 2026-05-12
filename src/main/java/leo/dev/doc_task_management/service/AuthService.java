@@ -5,6 +5,7 @@ import leo.dev.doc_task_management.dto.request.RegisterRequest;
 import leo.dev.doc_task_management.dto.response.AuthResponse;
 import leo.dev.doc_task_management.entity.Role;
 import leo.dev.doc_task_management.entity.User;
+import leo.dev.doc_task_management.exception.EmailAlreadyInUseException;
 import leo.dev.doc_task_management.exception.UserNotFoundException;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already in use");
+            throw new EmailAlreadyInUseException("Email already in use: " + request.getEmail());
         }
 
         User user = User.builder()
