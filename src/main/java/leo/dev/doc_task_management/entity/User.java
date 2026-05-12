@@ -31,7 +31,7 @@ public class User implements UserDetails {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
-    private ROLE role;
+    private Role role;
 
     private boolean isActive;
     private LocalDateTime createdAt;
