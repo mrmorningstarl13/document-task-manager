@@ -5,7 +5,7 @@ CREATE TABLE users (
                        first_name VARCHAR(50) NOT NULL,
                        last_name VARCHAR(50) NOT NULL,
                        role VARCHAR(50)  NOT NULL DEFAULT 'USER',
-                       active BOOLEAN NOT NULL DEFAULT TRUE,
+                       is_active BOOLEAN NOT NULL DEFAULT TRUE,
                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
