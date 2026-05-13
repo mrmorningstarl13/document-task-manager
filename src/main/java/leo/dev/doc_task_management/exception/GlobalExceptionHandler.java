@@ -29,4 +29,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleDisabledException(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account is deactivated");
     }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ResponseEntity<String> handleProjectNotFoundException(ProjectNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<String> handleForbiddenOperationException(ForbiddenOperationException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
 }

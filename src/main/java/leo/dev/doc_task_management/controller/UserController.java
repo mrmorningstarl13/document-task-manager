@@ -4,6 +4,7 @@ import leo.dev.doc_task_management.dto.request.ChangeRoleRequest;
 import leo.dev.doc_task_management.dto.request.UpdateUserRequest;
 import leo.dev.doc_task_management.dto.response.UserResponse;
 import leo.dev.doc_task_management.entity.User;
+import leo.dev.doc_task_management.service.ProjectService;
 import leo.dev.doc_task_management.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final ProjectService projectService;
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal User currentUser) {
@@ -33,8 +35,7 @@ public class UserController {
 
     @GetMapping("/me/projects")
     public ResponseEntity<?> getMyProjects(@AuthenticationPrincipal User currentUser) {
-        // TODO: implement after projects are done
-        return ResponseEntity.ok().build();
+        return (ResponseEntity<?>) projectService.getMyProjects(currentUser);
     }
 
     // ADMIN endpoints
