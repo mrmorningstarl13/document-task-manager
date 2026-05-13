@@ -1,8 +1,10 @@
-create table files (
-                       id BIGSERIAL PRIMARY KEY,
-                       name varchar(255) not null,
-                       type varchar(255) not null,
-                       size varchar(255) not null,
-                       owner bigserial not null references users(id),
-                       upload_date TIMESTAMP NOT NULL
+CREATE TABLE documents (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    size BIGINT NOT NULL,
+    storage_path VARCHAR(255) NOT NULL,
+    owner_id BIGINT NOT NULL REFERENCES users(id),
+    project_id BIGINT NOT NULL REFERENCES projects(id),
+    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

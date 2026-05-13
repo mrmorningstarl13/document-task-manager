@@ -62,7 +62,8 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
 
         if (task.getCreatedBy().getId() != currentUser.getId() &&
-                task.getProject().getOwner().getId() != currentUser.getId()) {
+                task.getProject().getOwner().getId() != currentUser.getId() &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
             throw new ForbiddenOperationException("You don't have permission to update this task");
         }
 
@@ -87,7 +88,8 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
 
         if (task.getCreatedBy().getId() != currentUser.getId() &&
-                task.getProject().getOwner().getId() != currentUser.getId()) {
+                task.getProject().getOwner().getId() != currentUser.getId() &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
             throw new ForbiddenOperationException("You don't have permission to delete this task");
         }
 
