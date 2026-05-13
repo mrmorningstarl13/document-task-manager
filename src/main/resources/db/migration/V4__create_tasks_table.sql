@@ -5,8 +5,9 @@ create table tasks (
                        priority VARCHAR(50) NOT NULL,
                        status VARCHAR(50) NOT NULL,
                        deadline TIMESTAMPTZ NOT NULL,
-                       ASSIGNED_TO bigserial REFERENCES users(id),
-                       CREATED_BY bigserial not null references users(id),
+                       ASSIGNED_TO bigint REFERENCES users(id),
+                       CREATED_BY bigint not null references users(id),
+                       project_id bigint NOT NULL REFERENCES projects(id),
                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
