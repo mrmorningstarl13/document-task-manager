@@ -27,6 +27,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     public ProjectResponse createProject(User currentUser, CreateProjectRequest request) {
         Project project = Project.builder()
@@ -111,5 +112,8 @@ public class ProjectService {
 
         project.setDeletedAt(LocalDateTime.now());
         projectRepository.save(project);
+
+        auditLogService.log(currentUser, "PROJECT_DELETE", "PROJECT",
+                project.getId(), "Deleted: " + project.getName(), null);
     }
 }

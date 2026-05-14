@@ -27,6 +27,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final ProjectRepository projectRepository;
     private final MinioService minioService;
+    private final AuditLogService auditLogService;
 
     public DocumentResponse uploadDocument(User currentUser, Long projectId, MultipartFile file) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
@@ -59,6 +60,10 @@ public class DocumentService {
                     .build();
 
             documentRepository.save(document);
+
+            auditLogService.log(currentUser, "DOCUMENT_UPLOAD", "DOCUMENT",
+                    document.getId(), "Uploaded: " + document.getName(), null);
+
             return DocumentResponse.fromEntity(document);
 
         } catch (IOException e) {
@@ -111,5 +116,8 @@ public class DocumentService {
 
         minioService.deleteFile(document.getStoragePath());
         documentRepository.delete(document);
+
+        auditLogService.log(currentUser, "DOCUMENT_DELETE", "DOCUMENT",
+                document.getId(), "Deleted: " + document.getName(), null);
     }
 }

@@ -24,8 +24,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final AuditLogService auditLogService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, String ipAddress) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new EmailAlreadyInUseException("Email already in use: " + request.getEmail());
         }
@@ -44,12 +45,15 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtService.generateToken(user);
+
+        auditLogService.log(user, "USER_REGISTER", "USER", user.getId(), "User registered", ipAddress);
+
         return AuthResponse.builder()
                 .token(token)
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, String ipAddress) {
         userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("No account found with email: " + request.getEmail()));
 
@@ -64,6 +68,9 @@ public class AuthService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         String token = jwtService.generateToken(user);
+
+        auditLogService.log(user, "USER_LOGIN", "USER", user.getId(), "User logged in", ipAddress);
+
         return AuthResponse.builder()
                 .token(token)
                 .build();

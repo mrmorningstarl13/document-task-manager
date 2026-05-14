@@ -21,6 +21,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public UserResponse getProfile(User currentUser) {
         return UserResponse.fromEntity(currentUser);
@@ -64,12 +65,16 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponse deactivateUser(Long userId) {
+    public UserResponse deactivateUser(Long userId, User currentUser) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
         user.setActive(false);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
+
+        auditLogService.log(currentUser, "USER_DEACTIVATE", "USER",
+                user.getId(), "Deactivated user: " + user.getEmail(), null);
+
         return UserResponse.fromEntity(user);
     }
 }

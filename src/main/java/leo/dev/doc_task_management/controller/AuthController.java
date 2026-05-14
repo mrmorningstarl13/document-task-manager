@@ -1,5 +1,6 @@
 package leo.dev.doc_task_management.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import leo.dev.doc_task_management.dto.request.LoginRequest;
 import leo.dev.doc_task_management.dto.request.RegisterRequest;
 import leo.dev.doc_task_management.dto.response.AuthResponse;
@@ -20,12 +21,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request,
+                                                 HttpServletRequest httpRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request, httpRequest.getRemoteAddr()));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request,
+                                              HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, httpRequest.getRemoteAddr()));
     }
 }
