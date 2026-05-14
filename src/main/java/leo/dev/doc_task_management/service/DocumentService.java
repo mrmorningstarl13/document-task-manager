@@ -29,6 +29,16 @@ public class DocumentService {
     private final MinioService minioService;
     private final AuditLogService auditLogService;
 
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+    private static final List<String> ALLOWED_TYPES = List.of(
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "text/plain"
+    );
+
     public DocumentResponse uploadDocument(User currentUser, Long projectId, MultipartFile file) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
@@ -36,6 +46,16 @@ public class DocumentService {
         if (project.getOwner().getId() != currentUser.getId() &&
                 !project.getMembers().contains(currentUser)) {
             throw new ForbiddenOperationException("You are not a member of this project");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size cannot exceed 10MB");
+        }
+        if (!ALLOWED_TYPES.contains(file.getContentType())) {
+            throw new IllegalArgumentException("File type not allowed: " + file.getContentType());
         }
 
         try {

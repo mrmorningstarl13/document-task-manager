@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddMemberRequest {
-    @NotNull
+    @NotNull(message = "User ID is required")
     private Long userId;
 }

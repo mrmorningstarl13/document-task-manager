@@ -32,7 +32,7 @@ public class TaskController {
     public ResponseEntity<TaskResponse> updateTask(@AuthenticationPrincipal User currentUser,
                                                    @PathVariable Long projectId,
                                                    @PathVariable Long taskId,
-                                                   @RequestBody UpdateTaskRequest request) {
+                                                   @Valid @RequestBody UpdateTaskRequest request) {
         return ResponseEntity.ok(taskService.updateTask(currentUser, taskId, request));
     }
 

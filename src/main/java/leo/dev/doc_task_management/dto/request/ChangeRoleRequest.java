@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeRoleRequest {
-    @NotBlank
+    @NotBlank(message = "Role is required")
     @Pattern(regexp = "ADMIN|USER", message = "Role must be ADMIN or USER")
     private String role;
 }

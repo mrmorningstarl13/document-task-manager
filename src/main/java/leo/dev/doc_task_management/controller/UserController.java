@@ -1,5 +1,6 @@
 package leo.dev.doc_task_management.controller;
 
+import jakarta.validation.Valid;
 import leo.dev.doc_task_management.dto.request.ChangeRoleRequest;
 import leo.dev.doc_task_management.dto.request.UpdateUserRequest;
 import leo.dev.doc_task_management.dto.response.UserResponse;
@@ -29,7 +30,7 @@ public class UserController {
 
     @PatchMapping("/me")
     public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal User currentUser,
-                                                      @RequestBody UpdateUserRequest request) {
+                                                      @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.updateProfile(currentUser, request));
     }
 
@@ -48,7 +49,7 @@ public class UserController {
     @PutMapping("/admin/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> changeUserRole(@PathVariable Long id,
-                                                       @RequestBody ChangeRoleRequest request) {
+                                                       @Valid @RequestBody ChangeRoleRequest request) {
         return ResponseEntity.ok(userService.changeUserRole(id, request.getRole()));
     }
 
