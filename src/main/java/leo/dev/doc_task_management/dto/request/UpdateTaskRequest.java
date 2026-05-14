@@ -21,7 +21,7 @@ public class UpdateTaskRequest {
     @Pattern(regexp = "LOW|MEDIUM|HIGH|URGENT", message = "Priority must be LOW, MEDIUM, HIGH or URGENT")
     private String priority;
 
-    @Pattern(regexp = "TODO|IN_PROGRESS|DONE", message = "Status must be TODO, IN_PROGRESS or DONE")
+    @Pattern(regexp = "NEW|IN_PROGRESS|DONE", message = "Status must be NEW, IN_PROGRESS or DONE")
     private String status;
 
     @Future(message = "Deadline must be a future date")

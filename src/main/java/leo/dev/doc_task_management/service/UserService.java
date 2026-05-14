@@ -46,7 +46,6 @@ public class UserService {
     }
 
     // ADMIN methods
-    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -54,7 +53,6 @@ public class UserService {
                 .toList();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse changeUserRole(Long userId, String role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
@@ -64,7 +62,6 @@ public class UserService {
         return UserResponse.fromEntity(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse deactivateUser(Long userId, User currentUser) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));

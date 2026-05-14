@@ -12,7 +12,5 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findAllByProject(Project project);
 
-    List<Document> findAllByOwner(User owner);
-
     Optional<Document> findByIdAndProject(Long id, Project project);
 }

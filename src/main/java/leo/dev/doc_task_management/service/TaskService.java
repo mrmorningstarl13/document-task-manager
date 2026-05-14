@@ -44,7 +44,7 @@ public class TaskService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .priority(TaskPriority.valueOf(request.getPriority().toUpperCase()))
-                .status(TaskStatus.TODO)
+                .status(TaskStatus.NEW)
                 .deadline(request.getDeadline())
                 .assignedTo(assignedTo)
                 .createdBy(currentUser)

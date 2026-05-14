@@ -199,9 +199,9 @@ Available statuses: `ACTIVE`, `ARCHIVED`, `COMPLETED`
 | PATCH | `/api/projects/{projectId}/tasks/{taskId}` | Update a task |
 | DELETE | `/api/projects/{projectId}/tasks/{taskId}` | Delete a task |
 | GET | `/api/projects/{projectId}/tasks` | Get all tasks for a project |
-| GET | `/api/projects/{projectId}/tasks?status=TODO` | Filter tasks by status |
+| GET | `/api/projects/{projectId}/tasks?status=NEW` | Filter tasks by status |
 | GET | `/api/projects/{projectId}/tasks?priority=HIGH` | Filter tasks by priority |
-| GET | `/api/projects/{projectId}/tasks?status=TODO&priority=HIGH` | Filter by both |
+| GET | `/api/projects/{projectId}/tasks?status=NEW&priority=HIGH` | Filter by both |
 | GET | `/api/projects/{projectId}/tasks/my` | Get tasks assigned to me |
 | PUT | `/api/projects/{projectId}/tasks/{taskId}/assign/{userId}` | Assign a user to a task |
 
@@ -229,7 +229,7 @@ Available statuses: `ACTIVE`, `ARCHIVED`, `COMPLETED`
 
 Available priorities: `LOW`, `MEDIUM`, `HIGH`
 
-Available statuses: `TODO`, `IN_PROGRESS`, `DONE`
+Available statuses: `NEW`, `IN_PROGRESS`, `DONE`
 
 ---
 
@@ -287,7 +287,7 @@ Available actions: `USER_LOGIN`, `DOCUMENT_UPLOAD`, `DOCUMENT_DELETE`, `PROJECT_
 - Tasks can be updated or deleted by the task owner, project owner or admin
 - Assigning a user to a task is done via `PATCH /api/projects/{projectId}/tasks/{taskId}` using the `assignedToId` field
 - Tasks can only be assigned to users who are members of the project
-- New tasks always start with status `TODO`
+- New tasks always start with status `NEW`
 
 ### Documents
 - Files are stored in MinIO, only metadata is saved in the database
