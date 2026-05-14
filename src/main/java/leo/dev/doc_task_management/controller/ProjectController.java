@@ -1,5 +1,6 @@
 package leo.dev.doc_task_management.controller;
 
+import jakarta.validation.Valid;
 import leo.dev.doc_task_management.dto.request.AddMemberRequest;
 import leo.dev.doc_task_management.dto.request.CreateProjectRequest;
 import leo.dev.doc_task_management.dto.request.UpdateProjectRequest;
@@ -24,7 +25,7 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@AuthenticationPrincipal User currentUser,
-                                                         @RequestBody CreateProjectRequest request) {
+                                                         @Valid @RequestBody CreateProjectRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(currentUser, request));
     }
 

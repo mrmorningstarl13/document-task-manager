@@ -1,5 +1,6 @@
 package leo.dev.doc_task_management.controller;
 
+import jakarta.validation.Valid;
 import leo.dev.doc_task_management.dto.request.CreateTaskRequest;
 import leo.dev.doc_task_management.dto.request.UpdateTaskRequest;
 import leo.dev.doc_task_management.dto.response.TaskResponse;
@@ -23,7 +24,7 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(@AuthenticationPrincipal User currentUser,
                                                    @PathVariable Long projectId,
-                                                   @RequestBody CreateTaskRequest request) {
+                                                   @Valid @RequestBody CreateTaskRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(currentUser, projectId, request));
     }
 
