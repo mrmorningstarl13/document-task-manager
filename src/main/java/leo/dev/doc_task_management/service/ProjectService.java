@@ -93,11 +93,8 @@ public class ProjectService {
     }
 
     public List<ProjectResponse> getMyProjects(User currentUser) {
-        List<Project> owned = projectRepository.findAllByOwnerAndDeletedAtIsNull(currentUser);
-        List<Project> member = projectRepository.findAllByMembersContainingAndDeletedAtIsNull(currentUser);
-
-        return Stream.concat(owned.stream(), member.stream())
-                .distinct()
+        return projectRepository.findAllByOwnerOrMember(currentUser)
+                .stream()
                 .map(ProjectResponse::fromEntity)
                 .toList();
     }
