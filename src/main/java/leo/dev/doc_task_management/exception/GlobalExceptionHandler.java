@@ -2,6 +2,7 @@ package leo.dev.doc_task_management.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
+@Slf4j
 public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
@@ -31,6 +33,7 @@ public class GlobalExceptionHandler {
             case FORBIDDEN_OPERATION -> HttpStatus.FORBIDDEN;
             case INVALID_FILE_TYPE, INVALID_FILE_SIZE, MEMBER_ALREADY_EXISTS, EMPTY_FILE -> HttpStatus.BAD_REQUEST;
         };
+        log.warn("App exception: {} - {}", ex.getCode(), ex.getMessage());
         return ResponseEntity.status(status).body(userMessage);
     }
 
@@ -41,7 +44,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
+    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+        log.warn("Bad credentials for request: {}", request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email or password");
     }
 
@@ -60,7 +64,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
+    public ResponseEntity<String> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("An unexpected error occurred");
     }

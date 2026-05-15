@@ -9,6 +9,7 @@ import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.DocumentRepository;
 import leo.dev.doc_task_management.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
@@ -82,6 +84,7 @@ public class DocumentService {
             auditLogService.log(currentUser, "DOCUMENT_UPLOAD", "DOCUMENT",
                     document.getId(), "Uploaded: " + document.getName(), null);
 
+            log.info("Document uploaded: {} to project: {}", document.getName(), projectId);
             return DocumentResponse.fromEntity(document);
 
         } catch (IOException e) {
@@ -101,6 +104,7 @@ public class DocumentService {
         Document document = documentRepository.findByIdAndProject(documentId, project)
                 .orElseThrow(() -> new AppException(AppException.ErrorCode.DOCUMENT_NOT_FOUND));
 
+        log.info("Document downloaded: {} by: {}", document.getName(), currentUser.getEmail());
         return minioService.downloadFile(document.getStoragePath());
     }
 
@@ -135,6 +139,7 @@ public class DocumentService {
         minioService.deleteFile(document.getStoragePath());
         documentRepository.delete(document);
 
+        log.info("Document deleted: {} by: {}", document.getName(), currentUser.getEmail());
         auditLogService.log(currentUser, "DOCUMENT_DELETE", "DOCUMENT",
                 document.getId(), "Deleted: " + document.getName(), null);
     }

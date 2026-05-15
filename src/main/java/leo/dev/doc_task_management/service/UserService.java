@@ -7,6 +7,7 @@ import leo.dev.doc_task_management.entity.User;
 import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -40,6 +42,7 @@ public class UserService {
 
         currentUser.setUpdatedAt(LocalDateTime.now());
         userRepository.save(currentUser);
+        log.info("User profile updated: {}", currentUser.getEmail());
         return UserResponse.fromEntity(currentUser);
     }
 
@@ -57,6 +60,7 @@ public class UserService {
         user.setRole(Role.valueOf(role.toUpperCase()));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
+        log.info("User role changed: {} to {}", user.getEmail(), role);
         return UserResponse.fromEntity(user);
     }
 
@@ -66,7 +70,7 @@ public class UserService {
         user.setActive(false);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
-
+        log.info("User deactivated: {}", user.getEmail());
         auditLogService.log(currentUser, "USER_DEACTIVATE", "USER",
                 user.getId(), "Deactivated user: " + user.getEmail(), null);
 

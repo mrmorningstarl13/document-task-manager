@@ -12,6 +12,7 @@ import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.ProjectRepository;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -39,6 +41,7 @@ public class ProjectService {
                 .build();
 
         projectRepository.save(project);
+        log.info("Project created: {} by: {}", project.getName(), currentUser.getEmail());
         return ProjectResponse.fromEntity(project);
     }
 
@@ -61,6 +64,7 @@ public class ProjectService {
         project.getMembers().add(userToAdd);
         project.setUpdatedAt(LocalDateTime.now());
         projectRepository.save(project);
+        log.info("Member added to project: {} user: {}", project.getName(), userToAdd.getEmail());
         return ProjectResponse.fromEntity(project);
     }
 
@@ -79,6 +83,7 @@ public class ProjectService {
 
         project.setUpdatedAt(LocalDateTime.now());
         projectRepository.save(project);
+        log.info("Project updated: {}", project.getName());
         return ProjectResponse.fromEntity(project);
     }
 
@@ -110,7 +115,7 @@ public class ProjectService {
 
         project.setDeletedAt(LocalDateTime.now());
         projectRepository.save(project);
-
+        log.info("Project deleted: {} by: {}", project.getName(), currentUser.getEmail());
         auditLogService.log(currentUser, "PROJECT_DELETE", "PROJECT",
                 project.getId(), "Deleted: " + project.getName(), null);
     }

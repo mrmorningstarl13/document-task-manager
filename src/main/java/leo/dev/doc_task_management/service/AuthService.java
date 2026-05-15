@@ -8,6 +8,7 @@ import leo.dev.doc_task_management.entity.User;
 import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -42,7 +44,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-
+        log.info("User registered: {}", request.getEmail());
         String token = jwtService.generateToken(user);
 
         auditLogService.log(user, "USER_REGISTER", "USER", user.getId(), "User registered", ipAddress);
@@ -54,7 +56,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request, String ipAddress) {
         userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.warn("Failed login attempt for email: {}", request.getEmail());
+                    return new AppException(AppException.ErrorCode.USER_NOT_FOUND);
+                });
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -69,6 +74,8 @@ public class AuthService {
         String token = jwtService.generateToken(user);
 
         auditLogService.log(user, "USER_LOGIN", "USER", user.getId(), "User logged in", ipAddress);
+
+        log.info("User logged in: {}", user.getEmail());
 
         return AuthResponse.builder()
                 .token(token)

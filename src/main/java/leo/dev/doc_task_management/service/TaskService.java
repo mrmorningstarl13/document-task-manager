@@ -9,6 +9,7 @@ import leo.dev.doc_task_management.repository.ProjectRepository;
 import leo.dev.doc_task_management.repository.TaskRepository;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -52,6 +54,7 @@ public class TaskService {
                 .build();
 
         taskRepository.save(task);
+        log.info("Task created: {} in project: {}", task.getTitle(), projectId);
         return TaskResponse.fromEntity(task);
     }
 
@@ -87,6 +90,7 @@ public class TaskService {
 
         task.setUpdatedAt(LocalDateTime.now());
         taskRepository.save(task);
+        log.info("Task updated: {}", task.getTitle());
         return TaskResponse.fromEntity(task);
     }
 
@@ -110,6 +114,7 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+        log.info("Task deleted: {} by: {}", task.getTitle(), currentUser.getEmail());
     }
 
     public List<TaskResponse> getProjectTasks(User currentUser, Long projectId,
