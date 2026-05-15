@@ -1,5 +1,8 @@
 package leo.dev.doc_task_management.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,21 +15,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final MessageSource messageSource;
+
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<String> handleAppException(AppException ex, HttpServletRequest request){
+        String userMessage = messageSource.getMessage(ex.getCode().name(), null, request.getLocale());
+
+        HttpStatus status = switch (ex.getCode()) {
+            case USER_NOT_FOUND, PROJECT_NOT_FOUND, TASK_NOT_FOUND, DOCUMENT_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case EMAIL_ALREADY_IN_USE -> HttpStatus.CONFLICT;
+            case FORBIDDEN_OPERATION -> HttpStatus.FORBIDDEN;
+            case INVALID_FILE_TYPE, INVALID_FILE_SIZE, MEMBER_ALREADY_EXISTS, EMPTY_FILE -> HttpStatus.BAD_REQUEST;
+        };
+        return ResponseEntity.status(status).body(userMessage);
+    }
+
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access denied: you don't have permission to perform this action");
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(EmailAlreadyInUseException.class)
-    public ResponseEntity<String> handleEmailAlreadyInUseException(EmailAlreadyInUseException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -37,26 +47,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<String> handleDisabledException(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account is deactivated");
-    }
-
-    @ExceptionHandler(ProjectNotFoundException.class)
-    public ResponseEntity<String> handleProjectNotFoundException(ProjectNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(ForbiddenOperationException.class)
-    public ResponseEntity<String> handleForbiddenOperationException(ForbiddenOperationException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<String> handleTaskNotFoundException(TaskNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(DocumentNotFoundException.class)
-    public ResponseEntity<String> handleDocumentNotFoundException(DocumentNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

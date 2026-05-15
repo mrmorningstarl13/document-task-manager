@@ -5,9 +5,7 @@ import leo.dev.doc_task_management.entity.Document;
 import leo.dev.doc_task_management.entity.Project;
 import leo.dev.doc_task_management.entity.Role;
 import leo.dev.doc_task_management.entity.User;
-import leo.dev.doc_task_management.exception.DocumentNotFoundException;
-import leo.dev.doc_task_management.exception.ForbiddenOperationException;
-import leo.dev.doc_task_management.exception.ProjectNotFoundException;
+import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.DocumentRepository;
 import leo.dev.doc_task_management.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,21 +39,21 @@ public class DocumentService {
 
     public DocumentResponse uploadDocument(User currentUser, Long projectId, MultipartFile file) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         if (project.getOwner().getId() != currentUser.getId() &&
                 !project.getMembers().contains(currentUser)) {
-            throw new ForbiddenOperationException("You are not a member of this project");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be empty");
+            throw new AppException(AppException.ErrorCode.EMPTY_FILE);
         }
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size cannot exceed 10MB");
+            throw new AppException(AppException.ErrorCode.INVALID_FILE_SIZE);
         }
         if (!ALLOWED_TYPES.contains(file.getContentType())) {
-            throw new IllegalArgumentException("File type not allowed: " + file.getContentType());
+            throw new AppException(AppException.ErrorCode.INVALID_FILE_TYPE);
         }
 
         try {
@@ -93,26 +91,26 @@ public class DocumentService {
 
     public InputStream downloadDocument(User currentUser, Long projectId, Long documentId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         if (project.getOwner().getId() != currentUser.getId() &&
                 !project.getMembers().contains(currentUser)) {
-            throw new ForbiddenOperationException("You are not a member of this project");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         Document document = documentRepository.findByIdAndProject(documentId, project)
-                .orElseThrow(() -> new DocumentNotFoundException("Document not found with id: " + documentId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.DOCUMENT_NOT_FOUND));
 
         return minioService.downloadFile(document.getStoragePath());
     }
 
     public List<DocumentResponse> listDocuments(User currentUser, Long projectId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         if (project.getOwner().getId() != currentUser.getId() &&
                 !project.getMembers().contains(currentUser)) {
-            throw new ForbiddenOperationException("You are not a member of this project");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         return documentRepository.findAllByProject(project)
@@ -123,15 +121,15 @@ public class DocumentService {
 
     public void deleteDocument(User currentUser, Long projectId, Long documentId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         Document document = documentRepository.findByIdAndProject(documentId, project)
-                .orElseThrow(() -> new DocumentNotFoundException("Document not found with id: " + documentId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.DOCUMENT_NOT_FOUND));
 
         if (document.getOwner().getId() != currentUser.getId() &&
                 project.getOwner().getId() != currentUser.getId() &&
                 !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new ForbiddenOperationException("You don't have permission to delete this document");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         minioService.deleteFile(document.getStoragePath());

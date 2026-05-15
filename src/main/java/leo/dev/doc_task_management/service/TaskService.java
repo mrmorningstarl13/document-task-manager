@@ -4,10 +4,7 @@ import leo.dev.doc_task_management.dto.request.CreateTaskRequest;
 import leo.dev.doc_task_management.dto.request.UpdateTaskRequest;
 import leo.dev.doc_task_management.dto.response.TaskResponse;
 import leo.dev.doc_task_management.entity.*;
-import leo.dev.doc_task_management.exception.ForbiddenOperationException;
-import leo.dev.doc_task_management.exception.ProjectNotFoundException;
-import leo.dev.doc_task_management.exception.TaskNotFoundException;
-import leo.dev.doc_task_management.exception.UserNotFoundException;
+import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.ProjectRepository;
 import leo.dev.doc_task_management.repository.TaskRepository;
 import leo.dev.doc_task_management.repository.UserRepository;
@@ -27,17 +24,18 @@ public class TaskService {
 
     public TaskResponse createTask(User currentUser, Long projectId, CreateTaskRequest request) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         if (project.getOwner().getId() != currentUser.getId() &&
-                !project.getMembers().contains(currentUser)) {
-            throw new ForbiddenOperationException("You are not a member of this project");
+                !project.getMembers().contains(currentUser) &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         User assignedTo = null;
         if (request.getAssignedToId() != null) {
             assignedTo = userRepository.findById(request.getAssignedToId())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getAssignedToId()));
+                    .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
         }
 
         Task task = Task.builder()
@@ -57,14 +55,23 @@ public class TaskService {
         return TaskResponse.fromEntity(task);
     }
 
-    public TaskResponse updateTask(User currentUser, Long taskId, UpdateTaskRequest request) {
+    public TaskResponse updateTask(User currentUser, Long projectId, Long taskId, UpdateTaskRequest request) {
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
+
+        if (project.getOwner().getId() != currentUser.getId() &&
+                !project.getMembers().contains(currentUser) &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
+        }
+
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.TASK_NOT_FOUND));
 
         if (task.getCreatedBy().getId() != currentUser.getId() &&
                 task.getProject().getOwner().getId() != currentUser.getId() &&
                 !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new ForbiddenOperationException("You don't have permission to update this task");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         if (request.getTitle() != null) task.setTitle(request.getTitle());
@@ -74,7 +81,7 @@ public class TaskService {
         if (request.getDeadline() != null) task.setDeadline(request.getDeadline());
         if (request.getAssignedToId() != null) {
             User assignedTo = userRepository.findById(request.getAssignedToId())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getAssignedToId()));
+                    .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
             task.setAssignedTo(assignedTo);
         }
 
@@ -83,14 +90,23 @@ public class TaskService {
         return TaskResponse.fromEntity(task);
     }
 
-    public void deleteTask(User currentUser, Long taskId) {
+    public void deleteTask(User currentUser, Long projectId, Long taskId) {
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
+
+        if (project.getOwner().getId() != currentUser.getId() &&
+                !project.getMembers().contains(currentUser) &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
+        }
+
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.TASK_NOT_FOUND));
 
         if (task.getCreatedBy().getId() != currentUser.getId() &&
                 task.getProject().getOwner().getId() != currentUser.getId() &&
                 !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new ForbiddenOperationException("You don't have permission to delete this task");
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         taskRepository.delete(task);
@@ -99,11 +115,12 @@ public class TaskService {
     public List<TaskResponse> getProjectTasks(User currentUser, Long projectId,
                                               String status, String priority) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
         if (project.getOwner().getId() != currentUser.getId() &&
-                !project.getMembers().contains(currentUser)) {
-            throw new ForbiddenOperationException("You are not a member of this project");
+                !project.getMembers().contains(currentUser) &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         if (status != null && priority != null) {

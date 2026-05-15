@@ -33,14 +33,14 @@ public class TaskController {
                                                    @PathVariable Long projectId,
                                                    @PathVariable Long taskId,
                                                    @Valid @RequestBody UpdateTaskRequest request) {
-        return ResponseEntity.ok(taskService.updateTask(currentUser, taskId, request));
+        return ResponseEntity.ok(taskService.updateTask(currentUser, projectId, taskId, request));
     }
 
     @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(@AuthenticationPrincipal User currentUser,
                                            @PathVariable Long projectId,
                                            @PathVariable Long taskId) {
-        taskService.deleteTask(currentUser, taskId);
+        taskService.deleteTask(currentUser, projectId, taskId);
         return ResponseEntity.noContent().build();
     }
 

@@ -4,11 +4,9 @@ import leo.dev.doc_task_management.dto.request.UpdateUserRequest;
 import leo.dev.doc_task_management.dto.response.UserResponse;
 import leo.dev.doc_task_management.entity.Role;
 import leo.dev.doc_task_management.entity.User;
-import leo.dev.doc_task_management.exception.EmailAlreadyInUseException;
-import leo.dev.doc_task_management.exception.UserNotFoundException;
+import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +30,7 @@ public class UserService {
         if (request.getLastName() != null) currentUser.setLastName(request.getLastName());
         if (request.getEmail() != null) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new EmailAlreadyInUseException("Email already in use: " + request.getEmail());
+                throw new AppException(AppException.ErrorCode.EMAIL_ALREADY_IN_USE);
             }
             currentUser.setEmail(request.getEmail());
         }
@@ -55,7 +53,7 @@ public class UserService {
 
     public UserResponse changeUserRole(Long userId, String role) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
         user.setRole(Role.valueOf(role.toUpperCase()));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
@@ -64,7 +62,7 @@ public class UserService {
 
     public UserResponse deactivateUser(Long userId, User currentUser) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
         user.setActive(false);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);

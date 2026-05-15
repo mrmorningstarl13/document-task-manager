@@ -5,8 +5,7 @@ import leo.dev.doc_task_management.dto.request.RegisterRequest;
 import leo.dev.doc_task_management.dto.response.AuthResponse;
 import leo.dev.doc_task_management.entity.Role;
 import leo.dev.doc_task_management.entity.User;
-import leo.dev.doc_task_management.exception.EmailAlreadyInUseException;
-import leo.dev.doc_task_management.exception.UserNotFoundException;
+import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,7 +27,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request, String ipAddress) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new EmailAlreadyInUseException("Email already in use: " + request.getEmail());
+            throw new AppException(AppException.ErrorCode.EMAIL_ALREADY_IN_USE);
         }
 
         User user = User.builder()
@@ -55,7 +54,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request, String ipAddress) {
         userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("No account found with email: " + request.getEmail()));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -65,7 +64,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
 
         String token = jwtService.generateToken(user);
 

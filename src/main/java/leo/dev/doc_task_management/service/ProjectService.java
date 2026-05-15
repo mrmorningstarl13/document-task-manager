@@ -6,10 +6,9 @@ import leo.dev.doc_task_management.dto.request.UpdateProjectRequest;
 import leo.dev.doc_task_management.dto.response.ProjectResponse;
 import leo.dev.doc_task_management.entity.Project;
 import leo.dev.doc_task_management.entity.ProjectStatus;
+import leo.dev.doc_task_management.entity.Role;
 import leo.dev.doc_task_management.entity.User;
-import leo.dev.doc_task_management.exception.ProjectNotFoundException;
-import leo.dev.doc_task_management.exception.ForbiddenOperationException;
-import leo.dev.doc_task_management.exception.UserNotFoundException;
+import leo.dev.doc_task_management.exception.AppException;
 import leo.dev.doc_task_management.repository.ProjectRepository;
 import leo.dev.doc_task_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -46,17 +44,18 @@ public class ProjectService {
 
     public ProjectResponse addMember(User currentUser, Long projectId, AddMemberRequest request) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
-        if (project.getOwner().getId() !=currentUser.getId()) {
-            throw new ForbiddenOperationException("Only the project owner can add members");
+        if (project.getOwner().getId() !=currentUser.getId() &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         User userToAdd = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getUserId()));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.USER_NOT_FOUND));
 
         if (project.getMembers().contains(userToAdd)) {
-            throw new RuntimeException("User is already a member of this project");
+            throw new AppException(AppException.ErrorCode.MEMBER_ALREADY_EXISTS);
         }
 
         project.getMembers().add(userToAdd);
@@ -67,10 +66,11 @@ public class ProjectService {
 
     public ProjectResponse updateProject(User currentUser, Long projectId, UpdateProjectRequest request) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
-        if (project.getOwner().getId() != currentUser.getId()) {
-            throw new ForbiddenOperationException("Only the project owner can update the project");
+        if (project.getOwner().getId() != currentUser.getId() &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         if (request.getName() != null) project.setName(request.getName());
@@ -104,10 +104,11 @@ public class ProjectService {
 
     public void deleteProject(User currentUser, Long projectId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new AppException(AppException.ErrorCode.PROJECT_NOT_FOUND));
 
-        if (project.getOwner().getId() != currentUser.getId()) {
-            throw new ForbiddenOperationException("Only the project owner can delete the project");
+        if (project.getOwner().getId() != currentUser.getId() &&
+                !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new AppException(AppException.ErrorCode.FORBIDDEN_OPERATION);
         }
 
         project.setDeletedAt(LocalDateTime.now());
